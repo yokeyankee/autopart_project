@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ part.name }} - Авторазбор{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'catalog:home' %}">Главная</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'catalog:part_list' %}">Каталог</a></li>
+        <li class="breadcrumb-item active">{{ part.name|truncatechars:30 }}</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-md-6">
+        {% if part.image %}
+        <img src="{{ part.image.url }}" class="img-fluid rounded shadow" alt="{{ part.name }}">
+        {% else %}
+        <div class="bg-light d-flex align-items-center justify-content-center rounded shadow" style="height: 400px;">
+            <span class="text-muted">Нет изображения</span>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-md-6">
+        <h1 class="mb-3">{{ part.name }}</h1>
+        <p class="text-muted">Артикул: <strong>{{ part.article }}</strong></p>
+
+        <div class="mb-3">
+            <span class="badge bg-{% if part.condition == 'new' %}success{% else %}warning{% endif %} fs-6">
+                {{ part.get_condition_display }}
+            </span>
+            {% if part.quantity > 0 %}
+            <span class="badge bg-info fs-6">В наличии: {{ part.quantity }} шт.</span>
+            {% else %}
+            <span class="badge bg-danger fs-6">Нет в наличии</span>
+            {% endif %}
+        </div>
+
+        <h2 class="text-primary mb-4">{{ part.price }} ₽</h2>
+
+        <table class="table table-bordered">
+            <tbody>
+                {% if part.brand %}
+                <tr>
+                    <th>Марка</th>
+                    <td>{{ part.brand.name }}</td>
+                </tr>
+                {% endif %}
+                {% if part.model %}
+                <tr>
+                    <th>Модель</th>
+                    <td>{{ part.model.name }}</td>
+                </tr>
+                {% endif %}
+                {% if part.category %}
+                <tr>
+                    <th>Категория</th>
+                    <td>{{ part.category.name }}</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+
+        {% if part.description %}
+        <h5>Описание</h5>
+        <p>{{ part.description|linebreaks }}</p>
+        {% endif %}
+
+        <button class="btn btn-success btn-lg mt-3" disabled>Добавить в корзину (скоро)</button>
+    </div>
+</div>
+
+<!-- Похожие запчасти -->
+{% if related_parts %}
+<h3 class="mt-5 mb-3">📦 Похожие запчасти</h3>
+<div class="row">
+    {% for related in related_parts %}
+    <div class="col-md-3 mb-3">
+        <div class="card h-100">
+            {% if related.image %}
+            <img src="{{ related.image.url }}" class="card-img-top" alt="{{ related.name }}" style="height: 120px; object-fit: cover;">
+            {% endif %}
+            <div class="card-body">
+                <h6 class="card-title">{{ related.name|truncatechars:30 }}</h6>
+                <p class="card-text text-primary">{{ related.price }} ₽</p>
+                <a href="{% url 'catalog:part_detail' related.pk %}" class="btn btn-sm btn-outline-primary">Смотреть</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

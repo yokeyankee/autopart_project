@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block title %}Каталог запчастей - Авторазбор{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">📦 Каталог запчастей</h1>
+
+<div class="row">
+    <!-- Боковая панель с фильтрами -->
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">🔍 Фильтры</h5>
+            </div>
+            <div class="card-body">
+                <form method="get" id="filter-form">
+                    <!-- Поиск -->
+                    <div class="mb-3">
+                        <label class="form-label">Поиск</label>
+                        <input type="text" name="q" class="form-control" placeholder="Название или артикул" value="{{ request.GET.q }}">
+                    </div>
+
+                    <!-- Марка -->
+                    <div class="mb-3">
+                        <label class="form-label">Марка</label>
+                        <select name="brand" class="form-select" id="brand-select">
+                            <option value="">Все марки</option>
+                            {% for brand in brands %}
+                            <option value="{{ brand.slug }}" {% if request.GET.brand == brand.slug %}selected{% endif %}>
+                                {{ brand.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Категория -->
+                    <div class="mb-3">
+                        <label class="form-label">Категория</label>
+                        <select name="category" class="form-select">
+                            <option value="">Все категории</option>
+                            {% for category in categories %}
+                            <option value="{{ category.slug }}" {% if request.GET.category == category.slug %}selected{% endif %}>
+                                {{ category.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Состояние -->
+                    <div class="mb-3">
+                        <label class="form-label">Состояние</label>
+                        <select name="condition" class="form-select">
+                            <option value="">Все</option>
+                            <option value="new" {% if request.GET.condition == 'new' %}selected{% endif %}>Новые</option>
+                            <option value="used" {% if request.GET.condition == 'used' %}selected{% endif %}>Б/У</option>
+                        </select>
+                    </div>
+
+                    <!-- Цена -->
+                    <div class="mb-3">
+                        <label class="form-label">Цена от (₽)</label>
+                        <input type="number" name="min_price" class="form-control" placeholder="0" value="{{ request.GET.min_price }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Цена до (₽)</label>
+                        <input type="number" name="max_price" class="form-control" placeholder="100000" value="{{ request.GET.max_price }}">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">Применить</button>
+                    <a href="{% url 'catalog:part_list' %}" class="btn btn-outline-secondary w-100 mt-2">Сбросить</a>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Список запчастей -->
+    <div class="col-md-9">
+        <div class="row">
+            {% for part in parts %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    {% if part.image %}
+                    <img src="{{ part.image.url }}" class="card-img-top" alt="{{ part.name }}" style="height: 180px; object-fit: cover;">
+                    {% else %}
+                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 180px;">
+                        <span class="text-muted">Нет фото</span>
+                    </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h6 class="card-title">{{ part.name|truncatechars:50 }}</h6>
+                        <p class="card-text text-muted small mb-1">{{ part.article }}</p>
+                        <p class="card-text">
+                            <span class="badge bg-{% if part.condition == 'new' %}success{% else %}warning{% endif %} mb-2">
+                                {{ part.get_condition_display }}
+                            </span><br>
+                            <strong class="text-primary">{{ part.price }} ₽</strong>
+                        </p>
+                        <a href="{% url 'catalog:part_detail' part.pk %}" class="btn btn-sm btn-outline-primary">Подробнее</a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="alert alert-info">
+                    <p class="mb-0">😕 По вашему запросу ничего не найдено.</p>
+                    <a href="{% url 'catalog:part_list' %}" class="btn btn-link">Сбросить фильтры</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Пагинация -->
+        {% if is_paginated %}
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}">← Назад</a>
+                </li>
+                {% endif %}
+
+                <li class="page-item active">
+                    <span class="page-link">{{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
+                </li>
+
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}">Вперед →</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

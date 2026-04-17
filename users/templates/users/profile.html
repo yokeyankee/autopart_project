@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}Личный кабинет - Авторазбор{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card shadow mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">👤 Информация</h5>
+            </div>
+            <div class="card-body text-center">
+                {% if user.profile.avatar %}
+                <img src="{{ user.profile.avatar.url }}" class="rounded-circle mb-3" width="150" height="150" alt="Аватар">
+                {% else %}
+                <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 150px; height: 150px;">
+                    <span class="text-white display-1">{{ user.username|first|upper }}</span>
+                </div>
+                {% endif %}
+                <h5>{{ user.get_full_name|default:user.username }}</h5>
+                <p class="text-muted">@{{ user.username }}</p>
+                <p><strong>Email:</strong> {{ user.email }}</p>
+                <p><strong>Телефон:</strong> {{ user.profile.phone|default:"Не указан" }}</p>
+                <p><strong>Дата регистрации:</strong> {{ user.date_joined|date:"d.m.Y" }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-warning">
+                <h5 class="mb-0">✏️ Редактировать профиль</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <h6>Основная информация</h6>
+                    {% for field in u_form %}
+                    <div class="mb-3">
+                        <label class="form-label">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}
+                        <div class="text-danger small">{{ field.errors|striptags }}</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+
+                    <h6 class="mt-4">Дополнительная информация</h6>
+                    {% for field in p_form %}
+                    <div class="mb-3">
+                        <label class="form-label">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}
+                        <div class="text-danger small">{{ field.errors|striptags }}</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+
+                    <button type="submit" class="btn btn-warning">Сохранить изменения</button>
+                    <a href="{% url 'catalog:home' %}" class="btn btn-outline-secondary">Отмена</a>
+                </form>
+            </div>
+        </div>
+
+        <!-- История заказов (будет позже) -->
+        <div class="card shadow mt-4">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">📦 История заказов</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-0">У вас пока нет заказов.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

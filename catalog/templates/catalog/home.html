@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Главная - Авторазбор{% endblock %}
+
+{% block content %}
+<div class="px-4 py-5 my-5 text-center bg-light rounded">
+    <h1 class="display-5 fw-bold">🚗 Авторазбор запчастей</h1>
+    <p class="lead mb-4">Качественные б/у и новые запчасти для вашего автомобиля</p>
+    <a href="{% url 'catalog:part_list' %}" class="btn btn-primary btn-lg">Перейти в каталог</a>
+</div>
+
+<!-- Последние поступления -->
+<h2 class="mb-3">🔥 Последние поступления</h2>
+<div class="row">
+    {% for part in latest_parts %}
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            {% if part.image %}
+            <img src="{{ part.image.url }}" class="card-img-top" alt="{{ part.name }}" style="height: 200px; object-fit: cover;">
+            {% else %}
+            <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px;">
+                <span class="text-white">Нет фото</span>
+            </div>
+            {% endif %}
+            <div class="card-body">
+                <h5 class="card-title">{{ part.name }}</h5>
+                <p class="card-text text-muted">{{ part.article }}</p>
+                <p class="card-text">
+                    <strong class="text-primary fs-5">{{ part.price }} ₽</strong><br>
+                    <span class="badge bg-{% if part.condition == 'new' %}success{% else %}warning{% endif %}">
+                        {{ part.get_condition_display }}
+                    </span>
+                </p>
+                <a href="{% url 'catalog:part_detail' part.pk %}" class="btn btn-outline-primary">Подробнее</a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <p>Запчастей пока нет.</p>
+    {% endfor %}
+</div>
+
+<!-- Популярные марки -->
+<h2 class="mb-3 mt-5">🚙 Популярные марки</h2>
+<div class="row">
+    {% for brand in brands %}
+    <div class="col-6 col-md-2 mb-3">
+        <a href="{% url 'catalog:part_list' %}?brand={{ brand.slug }}" class="text-decoration-none">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h6 class="card-title mb-0">{{ brand.name }}</h6>
+                </div>
+            </div>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
